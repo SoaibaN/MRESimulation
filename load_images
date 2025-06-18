@@ -1,0 +1,66 @@
+function load_images(dirname, FolderName, filldir)
+% load_images(dirname, FolderName, filldir)
+% 
+% This code takes the NLI converted images produced by this simulation and
+% displays them on one panel side by side. 
+% 
+% Variables: 
+% dirname = AP or PA 
+% filldir = user input for AP or PA 
+% FolderName = Name of larger folder where everything is being stored 
+% 
+% Created By: Soaiba Nuzhat, Columbia University, July 2024 
+
+ if filldir == 1 || filldir == 2
+    figure;
+
+    % First subplot: No Correction Image
+    subplot(1,2,1);
+    load(sprintf('%s/NLI_No_correction%s',FolderName,dirname))
+    im(t2stack(:,:,1));
+    title('No Correction');
+    
+    % Second subplot: Fugue Correction Image
+    subplot(1,2,2);
+    load(sprintf('%s/NLI_Fugue_correction%s',FolderName,dirname))
+    im(t2stack(:,:,1));
+    title('Fugue Correction');
+
+ end
+
+ if filldir == 3
+    figure; 
+
+    % First subplot: No Correction AP
+    subplot(2,3,1);
+    load(sprintf('%s/NLI_No_correctionAP',FolderName))
+    im(t2stack(:,:,1));
+    title('No Correction AP');
+    
+    % Second subplot: No Correction PA
+    subplot(2,3,4);
+    load(sprintf('%s/NLI_No_correctionPA',FolderName))
+    im(t2stack(:,:,1));
+    title('No Correction PA');
+
+     % Third subplot: Fugue Correction AP
+    subplot(2,3,2);
+    load(sprintf('%s/NLI_Fugue_correctionAP',FolderName))
+    im(t2stack(:,:,1));
+    title('Fugue Correction AP');
+
+     % Fourth subplot: Fugue Correction PA
+    subplot(2,3,5);
+    load(sprintf('%s/NLI_Fugue_correctionPA',FolderName))
+    im(t2stack(:,:,1));
+    title('Fugue Correction PA');
+
+     % Fifth subplot: Topup Correction
+    subplot(2,3,3);
+    load(sprintf('%s/NLI_topup_correction',FolderName))
+    im(t2stack(:,:,1));
+    title('Topup Correction');
+
+ end
+ 
+end
