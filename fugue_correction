@@ -1,0 +1,35 @@
+function [img_fugue]= run_fugue_correction(dwellTime,pathToFugue,img)
+
+% [img_fugue]= run_fugue_correction(dwellTime,pathToFugue,img)
+% 
+% img = image being altered 
+% pathToFugue = 
+% dwellTime = 
+% 
+% This coded runs the fugue corrections upon the image. Fugue correction
+% includes proportionally correcting the image at all levels of distortion
+% studied. Fugue  utilizes a separately collected map of the magnetic field 
+% to retrospectively correct mismapped pixels. 
+% 
+% Created by: Dr. Grace McIlvain, School, 20XX
+% Edited By: Soaiba Nuzhat, Columbia University, July 2024 
+
+img_img = flip(flip(permute(img,[2 1 3 4 5 6]),1),2);
+eval(sprintf('!$FSLDIR/bin/fugue -i %s/real_nii.nii --dwell=%0.6f --loadfmap=%s/FM_rads.nii --unwarpdir=y- -u %s/fugue_real',pathToFugue,dwellTime,pathToFugue,pathToFugue))
+eval(sprintf('!$FSLDIR/bin/fugue -i %s/imag_nii.nii --dwell=%0.6f --loadfmap=%s/FM_rads.nii --unwarpdir=y- -u %s/fugue_imag',pathToFugue,dwellTime,pathToFugue,pathToFugue))
+eval(sprintf('!gunzip -f %s/fugue_real.nii.gz',pathToFugue))
+eval(sprintf('!gunzip -f %s/fugue_imag.nii.gz',pathToFugue))
+% !gunzip -f *nii.gz
+
+fugue_real = load_nii(sprintf('%s/fugue_real.nii',pathToFugue));
+fugue_imag = load_nii(sprintf('%s/fugue_imag.nii',pathToFugue));
+
+freal_img = flip(flip(permute(reshape(fugue_real.img,size(img_img)),[2 1 3 4 5 6]),1),2);
+fimag_img = flip(flip(permute(reshape(fugue_imag.img,size(img_img)),[2 1 3 4 5 6]),1),2);
+
+img_fugue = freal_img + (1i*fimag_img);
+
+
+end
+
+
