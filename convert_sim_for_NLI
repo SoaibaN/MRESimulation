@@ -1,0 +1,35 @@
+function [Xmotion,Ymotion,Zmotion,mask,t2stack,mreParams]=convert_sim_for_NLI(img)
+
+% [Xmotion,Ymotion,Zmotion,mask,t2stack,mreParams]=convert_sim_for_NLI(img)
+% 
+% img = image being altered that was previously produced 
+% 
+% This code converts the sim to perform a nonlinear inversion on the image
+% as a form of correction. 
+% 
+% Created By: Dr. Grace McIlvain, School, 20XX
+% Edited By: Soaiba Nuzhat, Columbia University, July 2024 
+
+t2stack = mean(mean(mean(abs(img),6),5),4);
+t2nii = make_nii(flipdim(flipdim(permute(t2stack,[2 1 3]),1),2),[2 2 2]);
+mask = t2stack>mean(col(t2stack));
+
+subimg = (img(:,:,:,:,:,1)./img(:,:,:,:,:,2));
+
+fft_img = fft((angle(subimg).*repmat(mask,[1 1 1 size(img,4) size(img,5)])),[],5)/(2);
+wave_img = fft_img(:,:,:,:,2);
+
+Zmotion = wave_img(:,:,:,3);
+Ymotion = wave_img(:,:,:,1);
+Xmotion = wave_img(:,:,:,2);
+
+mreParams.subj = 'sim_for_inversion';
+mreParams.FOVx= 240;
+mreParams.FOVy= 240;
+mreParams.FOVz= 60;
+mreParams.nx= 120;
+mreParams.ny= 120;
+mreParams.nz= 30;
+mreParams.freq= 50;
+
+end
