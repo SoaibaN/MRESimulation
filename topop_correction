@@ -1,0 +1,76 @@
+function [img_topup]=run_topup_correction(imgAP,imgPA, rootPath, FolderName)
+% [img_topup]=run_topup_correction(imgAP,imgPA,acq_params,b02b0)
+% 
+% imgAP = 
+% imgPA = 
+% rootPath = path to the location of the files being called 
+% FolderName = Folder where these are being stored 
+% 
+% This code runs the topup correction on the image with the artifact. Topup
+% needs a collection of images with opposing polarity phase-encoding directions 
+% and thus distortion in opposite directions. It then mathematically maximizes
+% the similarities between the opposing images to create a fieldmap that is 
+% used to correct distortion.  
+% 
+% Created By: Dr. Grace McIlvain, School, 20XX
+% Edited By: Soaiba Nuzhat, Columbia University, July 2024 
+
+imgAP_abs = abs(imgAP);
+imgPA_abs = abs(imgPA);
+imgAP2 = flip(flip(permute(imgAP_abs,[2 1 3 4 5 6]),1),2);
+imgPA2 = flip(flip(permute(imgPA_abs,[2 1 3 4 5 6]),1),2);
+
+
+datatype = 16;
+imgAP_B0_nii = make_nii(imgAP2(:,:,:,1,1,1),[2 2 2],[],datatype);
+imgPA_B0_nii = make_nii(imgPA2(:,:,:,1,1,1),[2 2 2],[],datatype);
+save_nii(imgAP_B0_nii,sprintf('%s/Topup_correction/img_AP_B0.nii',FolderName))
+save_nii(imgPA_B0_nii,sprintf('%s/Topup_correction/img_PA_B0.nii',FolderName))
+
+% merge the two B0 files: this is what the TOPUP correction will be based on
+eval(sprintf('!$FSLDIR/bin/fslmerge -t %s/Topup_correction/topup_merge %s/Topup_correction/img_AP_B0.nii %s/Topup_correction/img_PA_B0.nii',FolderName,FolderName,FolderName))
+eval(sprintf('!gunzip -f %s/Topup_correction/*.nii.gz',FolderName))
+
+% perform TOPUP correction calculation
+eval(sprintf('!$FSLDIR/bin/topup --imain=%s/Topup_correction/topup_merge.nii --datain=%s/Code/acq_params_topup.txt --config=%s/Code/b02b0.cnf --out=%s/Topup_correction/topup_fieldmap',FolderName,rootPath,rootPath,FolderName))
+eval(sprintf('!gunzip -f %s/Topup_correction/*.nii.gz',FolderName))
+
+
+imgAP_real = real(flip(flip(permute(imgAP,[2 1 3 4 5 6]),1),2));
+imgAP_real2 = (reshape(imgAP_real,size(imgAP,1),size(imgAP,2),size(imgAP,3),[]));
+imgAP_real_nii = make_nii(imgAP_real2,[2 2 2]);
+save_nii(imgAP_real_nii,sprintf('%s/Topup_correction/imgAP_real.nii',FolderName))
+
+imgAP_imag = imag(flip(flip(permute(imgAP,[2 1 3 4 5 6]),1),2));
+imgAP_imag2 = (reshape(imgAP_imag,size(imgAP,1),size(imgAP,2),size(imgAP,3),[]));
+imgAP_imag_nii = make_nii(imgAP_imag2,[2 2 2]);
+save_nii(imgAP_imag_nii,sprintf('%s/Topup_correction/imgAP_imag.nii',FolderName))
+
+imgPA_real = real(flip(flip(permute(imgPA,[2 1 3 4 5 6]),1),2));
+imgPA_real2 = (reshape(imgPA_real,size(imgAP,1),size(imgAP,2),size(imgAP,3),[]));
+imgPA_real_nii = make_nii(imgPA_real2,[2 2 2]);
+save_nii(imgPA_real_nii,sprintf('%s/Topup_correction/imgPA_real.nii',FolderName))
+
+imgPA_imag = imag(flip(flip(permute(imgPA,[2 1 3 4 5 6]),1),2));
+imgPA_imag2 = (reshape(imgPA_imag,size(imgAP,1),size(imgAP,2),size(imgAP,3),[]));
+imgPA_imag_nii = make_nii(imgPA_imag2,[2 2 2]);
+save_nii(imgPA_imag_nii,sprintf('%s/Topup_correction/imgPA_imag.nii',FolderName))
+
+pause(10)
+eval(sprintf('!$FSLDIR/bin/applytopup --imain=%s/Topup_correction/imgAP_real,%s/Topup_correction/imgPA_real --inindex=1,2 --datain=%s/Code/acq_params_topup.txt --topup=%s/Topup_correction/topup_fieldmap_fieldcoef --method=jac --out=%s/Topup_correction/topup_corrected_real',FolderName,FolderName,rootPath,FolderName,FolderName))
+eval(sprintf('!$FSLDIR/bin/applytopup --imain=%s/Topup_correction/imgAP_imag,%s/Topup_correction/imgPA_imag --inindex=1,2 --datain=%s/Code/acq_params_topup.txt --topup=%s/Topup_correction/topup_fieldmap_fieldcoef --method=jac --out=%s/Topup_correction/topup_corrected_imag',FolderName,FolderName,rootPath, FolderName, FolderName))
+eval(sprintf('!gunzip -f %s/Topup_correction/*.nii.gz',FolderName))
+
+realpart = load_nii(sprintf('%s/Topup_correction/topup_corrected_real.nii',FolderName));
+imagpart = load_nii(sprintf('%s/Topup_correction/topup_corrected_imag.nii',FolderName));
+
+realpart = realpart.img;
+imagpart = imagpart.img;
+
+realpart2= flip(flip(permute(reshape(realpart,size(imgAP)),[2 1 3 4 5 6]),1),2);
+imagpart2= flip(flip(permute(reshape(imagpart,size(imgAP)),[2 1 3 4 5 6]),1),2);
+
+img_topup = realpart2 + (1i*imagpart2);
+save(sprintf('%s/Topup_correction/img_topup',FolderName), 'img_topup')
+
+end
