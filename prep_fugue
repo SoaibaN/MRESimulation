@@ -1,0 +1,24 @@
+function [FM_nii,real_nii,imag_nii,img_nii]= prep_for_fugue(img,FM)
+% [FM_nii,real_nii,imag_nii,img_nii]= prep_for_fugue(img,FM)
+% 
+% FM = Field map = pattern of distortion 
+% img = image produced from the recon_MRE_images function which is then altered 
+% 
+% This function preps the img for the fugue_correction function to run. 
+% 
+% Created By: Dr. Grace McIlvain, School Name, 20XX
+% Edited by: Soaiba Nuzhat, Columbia University, 2024 
+
+img_img = flip(flip(permute(img,[2 1 3 4 5 6]),1),2);
+real_img = real(img_img);
+imag_img = imag(img_img);
+
+img_nii = make_nii(reshape(img_img,size(img_img,1),size(img_img,2),size(img_img,3),[]));
+real_nii = make_nii(reshape(real_img,size(real_img,1),size(real_img,2),size(real_img,3),[]));
+imag_nii = make_nii(reshape(imag_img,size(imag_img,1),size(imag_img,2),size(imag_img,3),[]));
+
+FM_nii = make_nii(flip(flip(permute(FM,[2 1 3]),1),2)*(2*pi));
+
+end
+
+
