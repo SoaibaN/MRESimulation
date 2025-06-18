@@ -1,0 +1,445 @@
+classdef SimulationGUI < matlab.apps.AppBase
+
+    % Properties that correspond to app components
+    properties (Access = public)
+        SelectiveDropDown               matlab.ui.Figure
+        MRESimulationPanel              matlab.ui.container.Panel
+        RunSimulationButton             matlab.ui.control.Button
+        nshotsSlider                    matlab.ui.control.Slider
+        nshotsSliderLabel               matlab.ui.control.Label
+        EditField_4                     matlab.ui.control.NumericEditField
+        ReadoutMsSlider                 matlab.ui.control.Slider
+        ReadoutMsLabel                  matlab.ui.control.Label
+        WouldyouliketofillintheAPorPAdirectionLabel_2  matlab.ui.control.Label
+        EditField_3                     matlab.ui.control.NumericEditField
+        EditField_2                     matlab.ui.control.NumericEditField
+        EditField                       matlab.ui.control.NumericEditField
+        FMmaxSlider                     matlab.ui.control.Slider
+        FMmaxSliderLabel                matlab.ui.control.Label
+        NSlider                         matlab.ui.control.Slider
+        NSliderLabel                    matlab.ui.control.Label
+        filldirDropDown                 matlab.ui.control.DropDown
+        filldirDropDownLabel            matlab.ui.control.Label
+        TrajectoryDropDown              matlab.ui.control.DropDown
+        TrajectoryDropDownLabel         matlab.ui.control.Label
+        FMdirDropDown                   matlab.ui.control.DropDown
+        FMdirDropDownLabel              matlab.ui.control.Label
+        FMtypeDropDown                  matlab.ui.control.DropDown
+        FMtypeDropDownLabel             matlab.ui.control.Label
+        ChoseadirectionXYZfortheoffresonancegradientofyourlinearFMLabel  matlab.ui.control.Label
+        WouldyoulikearealisticorlinearFMLabel  matlab.ui.control.Label
+        WouldyouliketofillintheAPorPAdirectionLabel  matlab.ui.control.Label
+        WouldyouliketouseanEPIorspiraltrajectoryLabel  matlab.ui.control.Label
+        EnterEPIreadouttimeinmsLabel    matlab.ui.control.Label
+        WouldyoulikeFMtobeonoroffLabel  matlab.ui.control.Label
+        Label                           matlab.ui.control.Label
+        EnterthematrixsizeLabel         matlab.ui.control.Label
+        FMonoffDropDown                 matlab.ui.control.DropDown
+        FMonoffDropDownLabel            matlab.ui.control.Label
+        VIBESLab                        matlab.ui.control.Label
+
+    end
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Value changed function: EditField
+        function EditFieldValueChanged(app, event)
+            app.NSlider.Value = app.EditField.Value;
+            app.EditField.Value = round(app.EditField.Value);
+        end
+
+        % Value changed function: NSlider
+        function NSliderValueChanged4(app, event)
+            app.NSlider.Value = round(app.NSlider.Value); 
+            app.EditField.Value = app.NSlider.Value;
+        end
+
+        % Value changed function: nshotsSlider
+        function nshotsSliderValueChanged(app, event)
+            app.nshotsSlider.Value = round(app.nshotsSlider.Value);
+            app.EditField_4.Value = app.nshotsSlider.Value;
+        end
+
+        % Value changed function: EditField_4
+        function EditField_4ValueChanged(app, event)
+            app.nshotsSlider.Value = app.EditField_4.Value;
+            app.EditField_4.Value = round(app.EditField_4.Value);
+        end
+
+         % Value changed function: TrajectoryDropDown
+        function TrajectoryDropDownValueChanged(app, event)
+            if app.TrajectoryDropDown.Value == 2
+                app.ReadoutMsSlider.Enable = 'off';
+                app.EditField_3.Enable = 'off';
+                app.EnterEPIreadouttimeinmsLabel.Enable = 'off';
+                app.WouldyouliketofillintheAPorPAdirectionLabel.Enable = 'off';
+                app.filldirDropDown.Enable = 'off';
+                app.WouldyouliketofillintheAPorPAdirectionLabel_2.Enable = 'on';
+                app.EditField_4.Enable = 'on';
+                app.nshotsSlider.Enable = 'on';
+            end
+            if app.TrajectoryDropDown.Value == 1
+                app.ReadoutMsSlider.Enable = 'on';
+                app.EditField_3.Enable = 'on';
+                app.EnterEPIreadouttimeinmsLabel.Enable = 'on';
+                app.WouldyouliketofillintheAPorPAdirectionLabel.Enable = 'on';
+                app.filldirDropDown.Enable = 'on';
+                app.WouldyouliketofillintheAPorPAdirectionLabel_2.Enable = 'off';
+                app.EditField_4.Enable = 'off';
+                app.nshotsSlider.Enable = 'off';
+            end
+            if app.TrajectoryDropDown.Value == 0
+                app.ReadoutMsSlider.Enable = 'off';
+                app.EditField_3.Enable = 'off';
+                app.EnterEPIreadouttimeinmsLabel.Enable = 'off';
+                app.WouldyouliketofillintheAPorPAdirectionLabel.Enable = 'off';
+                app.filldirDropDown.Enable = 'off';
+                app.WouldyouliketofillintheAPorPAdirectionLabel_2.Enable = 'off';
+                app.EditField_4.Enable = 'off';
+                app.nshotsSlider.Enable = 'off';
+            end
+        end 
+        
+         % Value changed function: EditField_3
+        function EditField_3ValueChanged(app, event)
+            app.ReadoutMsSlider.Value = app.EditField_3.Value;
+        end
+
+        % Value changed function: ReadoutMsSlider
+        function ReadoutMsSliderValueChanged(app, event)
+            app.EditField_3.Value = app.ReadoutMsSlider.Value;
+        end
+
+        % Value changed function: filldirDropDown
+        function filldirDropDownValueChanged(app, event)
+            value = app.filldirDropDown.Value;
+        end
+
+        % Value changed function: FMonoffDropDown
+        function FMonoffDropDownValueChanged(app, event)
+            if app.FMonoffDropDown.Value == 1 %FM on
+                app.FMtypeDropDown.Enable = 'on';
+                app.WouldyoulikearealisticorlinearFMLabel.Enable = 'on';
+                app.FMmaxSlider.Enable = 'on'
+                app.EditField_2.Enable = 'on';
+                app.Label.Enable = 'on';       
+            else app.FMonoffDropDown.Value == 0 %FM off 
+                app.FMtypeDropDown.Enable = 'off';
+                app.WouldyoulikearealisticorlinearFMLabel.Enable = 'off';
+                app.FMdirDropDown.Enable = 'off';
+                app.ChoseadirectionXYZfortheoffresonancegradientofyourlinearFMLabel.Enable = 'off';
+                app.FMmaxSlider.Enable = 'off';
+                app.EditField_2.Enable = 'off';
+                app.Label.Enable = 'off';
+            end
+        end    
+
+        % Value changed function: FMtypeDropDown
+        function FMtypeDropDownValueChanged(app, event)
+            if app.FMtypeDropDown.Value == 2 % linear
+                app.FMdirDropDown.Enable = 'on';
+                app.ChoseadirectionXYZfortheoffresonancegradientofyourlinearFMLabel.Enable = 'on';
+
+            else app.FMtypeDropDown.Value == 1 % realistic
+                app.FMdirDropDown.Enable = 'off';
+                app.ChoseadirectionXYZfortheoffresonancegradientofyourlinearFMLabel.Enable = 'off';
+
+            end  
+        end 
+
+        % Value changed function: FMmaxSlider
+        function FMmaxSliderValueChanged(app, event)
+            app.EditField_2.Value = app.FMmaxSlider.Value;
+        end
+
+        % Value changed function: EditField_2
+        function EditField_2ValueChanged(app, event)
+            app.FMmaxSlider.Value = app.EditField_2.Value;
+        end 
+
+        function FMdirDropDownValueChanged(app, event)
+            value = app.FMdirDropDown.Value;
+        end
+
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Create SelectiveDropDown and hide until all components are created
+            app.SelectiveDropDown = uifigure('Visible', 'off');
+            app.SelectiveDropDown.Position = [100 100 717 821];
+            app.SelectiveDropDown.Name = 'MATLAB App';
+
+            % Create MRESimulationPanel
+            app.MRESimulationPanel = uipanel(app.SelectiveDropDown);
+            app.MRESimulationPanel.TitlePosition = 'centertop';
+            app.MRESimulationPanel.Title = 'MRE Simulation';
+            app.MRESimulationPanel.BackgroundColor = [0.9412 0.9412 0.9412];
+            app.MRESimulationPanel.FontName = 'Arial';
+            app.MRESimulationPanel.FontWeight = 'bold';
+            app.MRESimulationPanel.FontSize = 20;
+            app.MRESimulationPanel.Position = [2 -1 719 823];
+
+            % Create FMonoffDropDown
+            app.FMonoffDropDown = uidropdown(app.MRESimulationPanel);
+            app.FMonoffDropDown.Items = {'Pick an option below', 'On', 'Off'};
+            app.FMonoffDropDown.ItemsData = [2 1 0];
+            app.FMonoffDropDown.ValueChangedFcn = createCallbackFcn(app, @FMonoffDropDownValueChanged, true);
+            app.FMonoffDropDown.Tag = 'FMonoff';
+            app.FMonoffDropDown.FontName = 'Arial';
+            app.FMonoffDropDown.FontWeight = 'bold';
+            app.FMonoffDropDown.Position = [565 355 100 22];
+            app.FMonoffDropDown.Value = 2;
+
+            % Create EnterthematrixsizeLabel
+            app.EnterthematrixsizeLabel = uilabel(app.MRESimulationPanel);
+            app.EnterthematrixsizeLabel.FontName = 'Arial';
+            app.EnterthematrixsizeLabel.FontWeight = 'bold';
+            app.EnterthematrixsizeLabel.Position = [21 745 152 22];
+            app.EnterthematrixsizeLabel.Text = 'Enter the matrix size';
+
+            % Create Label
+            app.Label = uilabel(app.MRESimulationPanel);
+            app.Label.VerticalAlignment = 'top';
+            app.Label.WordWrap = 'on';
+            app.Label.FontName = 'Arial';
+            app.Label.Position = [26 119 218 30];
+            app.Label.Text = 'Enter a maximum off resonance for your FM in Hz/cm.';
+            app.Label.Enable = 'off';
+            app.Label.FontWeight = 'bold';
+
+            % Create WouldyoulikeFMtobeonoroffLabel
+            app.WouldyoulikeFMtobeonoroffLabel = uilabel(app.MRESimulationPanel);
+            app.WouldyoulikeFMtobeonoroffLabel.FontName = 'Arial';
+            app.WouldyoulikeFMtobeonoroffLabel.Position = [26 355 195 22];
+            app.WouldyoulikeFMtobeonoroffLabel.Text = 'Would you like FM to be on or off';
+            app.WouldyoulikeFMtobeonoroffLabel.FontWeight = 'bold';
+         
+
+            % Create EnterEPIreadouttimeinmsLabel
+            app.EnterEPIreadouttimeinmsLabel = uilabel(app.MRESimulationPanel);
+            app.EnterEPIreadouttimeinmsLabel.FontName = 'Arial';
+            app.EnterEPIreadouttimeinmsLabel.Position = [25 556 168 22];
+            app.EnterEPIreadouttimeinmsLabel.Text = 'Enter EPI readout time in ms';
+            app.EnterEPIreadouttimeinmsLabel.Enable = 'off';
+            app.EnterEPIreadouttimeinmsLabel.FontWeight = 'bold';
+
+            % Create WouldyouliketouseanEPIorspiraltrajectoryLabel
+            app.WouldyouliketouseanEPIorspiraltrajectoryLabel = uilabel(app.MRESimulationPanel);
+            app.WouldyouliketouseanEPIorspiraltrajectoryLabel.FontName = 'Arial';
+            app.WouldyouliketouseanEPIorspiraltrajectoryLabel.Position = [20 627 291 22];
+            app.WouldyouliketouseanEPIorspiraltrajectoryLabel.WordWrap = 'on';
+            app.WouldyouliketouseanEPIorspiraltrajectoryLabel.Text = 'Would you like to use an EPI or spiral trajectory? ';
+            app.WouldyouliketouseanEPIorspiraltrajectoryLabel.FontWeight = 'bold';
+
+            % Create WouldyouliketofillintheAPorPAdirectionLabel
+            app.WouldyouliketofillintheAPorPAdirectionLabel = uilabel(app.MRESimulationPanel);
+            app.WouldyouliketofillintheAPorPAdirectionLabel.FontName = 'Arial';
+            app.WouldyouliketofillintheAPorPAdirectionLabel.Position = [21 487 274 22];
+            app.WouldyouliketofillintheAPorPAdirectionLabel.Text = 'Would you like to fill in the AP or PA direction?';
+            app.WouldyouliketofillintheAPorPAdirectionLabel.Enable = 'off';
+            app.WouldyouliketofillintheAPorPAdirectionLabel.FontWeight = 'bold';
+
+            % Create WouldyoulikearealisticorlinearFMLabel
+            app.WouldyoulikearealisticorlinearFMLabel = uilabel(app.MRESimulationPanel);
+            app.WouldyoulikearealisticorlinearFMLabel.FontName = 'Arial';
+            app.WouldyoulikearealisticorlinearFMLabel.Position = [26 284 232 22];
+            app.WouldyoulikearealisticorlinearFMLabel.Text = 'Would you like a realistic or linear FM? ';
+            app.WouldyoulikearealisticorlinearFMLabel.Enable = 'off';
+            app.WouldyoulikearealisticorlinearFMLabel.FontWeight = 'bold';
+
+            % Create ChoseadirectionXYZfortheoffresonancegradientofyourlinearFMLabel
+            app.ChoseadirectionXYZfortheoffresonancegradientofyourlinearFMLabel = uilabel(app.MRESimulationPanel);
+            app.ChoseadirectionXYZfortheoffresonancegradientofyourlinearFMLabel.WordWrap = 'on';
+            app.ChoseadirectionXYZfortheoffresonancegradientofyourlinearFMLabel.FontName = 'Arial';
+            app.ChoseadirectionXYZfortheoffresonancegradientofyourlinearFMLabel.Position = [27 183 200 58];
+            app.ChoseadirectionXYZfortheoffresonancegradientofyourlinearFMLabel.Text = 'Chose a direction (X,Y,Z) for the off resonance gradient of your linear FM';
+            app.ChoseadirectionXYZfortheoffresonancegradientofyourlinearFMLabel.Enable = 'off';
+            app.ChoseadirectionXYZfortheoffresonancegradientofyourlinearFMLabel.FontWeight = 'bold';
+
+            % Create FMtypeDropDown
+            app.FMtypeDropDown = uidropdown(app.MRESimulationPanel);
+            app.FMtypeDropDown.Items = {'Pick an option','Realistic', 'Linear '};
+            app.FMtypeDropDown.ItemsData = [0 1 2];
+            app.FMtypeDropDown.ValueChangedFcn = createCallbackFcn(app, @FMtypeDropDownValueChanged, true);
+            app.FMtypeDropDown.Tag = 'FMtype';
+            app.FMtypeDropDown.FontName = 'Arial';
+            app.FMtypeDropDown.FontWeight = 'bold';
+            app.FMtypeDropDown.Placeholder = 'On, Off';
+            app.FMtypeDropDown.Position = [565 274 100 22];
+            app.FMtypeDropDown.Value = 0;
+            app.FMtypeDropDown.Enable = 'off';
+
+            % Create FMdirDropDown
+            app.FMdirDropDown = uidropdown(app.MRESimulationPanel);
+            app.FMdirDropDown.Items = {'Pick an option below','X', 'Y ', 'Z'};
+            app.FMdirDropDown.ItemsData = [0 1 2 3];
+            app.FMdirDropDown.ValueChangedFcn = createCallbackFcn(app, @FMdirDropDownValueChanged, true);
+            app.FMdirDropDown.Tag = 'FMdir';
+            app.FMdirDropDown.FontName = 'Arial';
+            app.FMdirDropDown.FontWeight = 'bold';
+            app.FMdirDropDown.Position = [565 201 100 22];
+            app.FMdirDropDown.Value = 0;
+            app.FMdirDropDown.Enable = 'off';
+
+            % Create TrajectoryDropDown
+            app.TrajectoryDropDown = uidropdown(app.MRESimulationPanel);
+            app.TrajectoryDropDown.Items = {'Pick an option below', 'EPI', 'Spiral '};
+            app.TrajectoryDropDown.ItemsData = [0 1 2];
+            app.TrajectoryDropDown.ValueChangedFcn = createCallbackFcn(app, @TrajectoryDropDownValueChanged, true);
+            app.TrajectoryDropDown.Tag = 'Trajectory';
+            app.TrajectoryDropDown.FontName = 'Arial';
+            app.TrajectoryDropDown.FontWeight = 'bold';
+            app.TrajectoryDropDown.Position = [575 627 100 22];
+            app.TrajectoryDropDown.Value = 0;
+
+            % Create filldirDropDown
+            app.filldirDropDown = uidropdown(app.MRESimulationPanel);
+            app.filldirDropDown.Items = {'Pick an option below','AP', 'PA', 'Both '};
+            app.filldirDropDown.ItemsData = [0 1 2 3];
+            app.filldirDropDown.ValueChangedFcn = createCallbackFcn(app, @filldirDropDownValueChanged, true);
+            app.filldirDropDown.Tag = 'filldir ';
+            app.filldirDropDown.FontName = 'Arial';
+            app.filldirDropDown.FontWeight = 'bold';
+            app.filldirDropDown.Position = [565 487 100 22];
+            app.filldirDropDown.Value = 0;
+            app.filldirDropDown.Enable = 'off';
+
+            % Create NSlider
+            app.NSlider = uislider(app.MRESimulationPanel);
+            app.NSlider.Limits = [0 300];
+            app.NSlider.ValueChangedFcn = createCallbackFcn(app, @NSliderValueChanged4, true);
+            app.NSlider.FontName = 'Arial';
+            app.NSlider.FontWeight = 'bold';
+            app.NSlider.Tag = 'N';
+            app.NSlider.Position = [467 765 201 3];
+
+            % Create FMmaxSlider
+            app.FMmaxSlider = uislider(app.MRESimulationPanel);
+            app.FMmaxSlider.Limits = [0 64];
+            app.FMmaxSlider.ValueChangedFcn = createCallbackFcn(app, @FMmaxSliderValueChanged, true);
+            app.FMmaxSlider.FontName = 'Arial';
+            app.FMmaxSlider.FontWeight = 'bold';
+            app.FMmaxSlider.Position = [461 136 204 3];
+            app.FMmaxSlider.Enable = 'off';
+
+            % Create EditField
+            app.EditField = uieditfield(app.MRESimulationPanel, 'numeric');
+            app.EditField.ValueChangedFcn = createCallbackFcn(app, @EditFieldValueChanged, true);
+            app.EditField.HorizontalAlignment = 'center';
+            app.EditField.FontName = 'Arial';
+            app.EditField.FontWeight = 'bold';
+            app.EditField.Position = [363 744 85 25];
+
+            % Create EditField_2
+            app.EditField_2 = uieditfield(app.MRESimulationPanel, 'numeric');
+            app.EditField_2.ValueChangedFcn = createCallbackFcn(app, @EditField_2ValueChanged, true);
+            app.EditField_2.Tag = 'FMmax';
+            app.EditField_2.HorizontalAlignment = 'center';
+            app.EditField_2.FontName = 'Arial';
+            app.EditField_2.FontWeight = 'bold';
+            app.EditField_2.Position = [370 114 75 25];
+            app.EditField_2.Enable = 'off';
+
+            % Create EditField_3
+            app.EditField_3 = uieditfield(app.MRESimulationPanel, 'numeric');
+            app.EditField_3.ValueChangedFcn = createCallbackFcn(app, @EditField_3ValueChanged, true);
+            app.EditField_3.Tag = 'FMmax';
+            app.EditField_3.HorizontalAlignment = 'center';
+            app.EditField_3.FontName = 'Arial';
+            app.EditField_3.FontWeight = 'bold';
+            app.EditField_3.Position = [370 555 82 25];
+            app.EditField_3.Enable = 'off';
+
+            % Create WouldyouliketofillintheAPorPAdirectionLabel_2
+            app.WouldyouliketofillintheAPorPAdirectionLabel_2 = uilabel(app.MRESimulationPanel);
+            app.WouldyouliketofillintheAPorPAdirectionLabel_2.WordWrap = 'on';
+            app.WouldyouliketofillintheAPorPAdirectionLabel_2.FontName = 'Arial';
+            app.WouldyouliketofillintheAPorPAdirectionLabel_2.Position = [26 399 239 65];
+            app.WouldyouliketofillintheAPorPAdirectionLabel_2.Text = 'Enter number the number of nshots you would like for your spiral trajectory ';
+            app.WouldyouliketofillintheAPorPAdirectionLabel_2.Enable = 'off';
+            app.WouldyouliketofillintheAPorPAdirectionLabel_2.FontWeight = 'bold';
+
+            % Create ReadoutMsSlider
+            app.ReadoutMsSlider = uislider(app.MRESimulationPanel);
+            app.ReadoutMsSlider.Limits = [10 60];
+            app.ReadoutMsSlider.ValueChangedFcn = createCallbackFcn(app, @ReadoutMsSliderValueChanged, true);
+            app.ReadoutMsSlider.FontName = 'Arial';
+            app.ReadoutMsSlider.FontWeight = 'bold';
+            app.ReadoutMsSlider.Position = [471 575 201 3];
+            app.ReadoutMsSlider.Enable = 'off';
+
+            % Create EditField_4
+            app.EditField_4 = uieditfield(app.MRESimulationPanel, 'numeric');
+            app.EditField_4.ValueChangedFcn = createCallbackFcn(app, @EditField_4ValueChanged, true);
+            app.EditField_4.Tag = 'FMmax';
+            app.EditField_4.HorizontalAlignment = 'center';
+            app.EditField_4.FontName = 'Arial';
+            app.EditField_4.FontWeight = 'bold';
+            app.EditField_4.Position = [370 420 82 25];
+            app.EditField_4.Enable = 'off';
+
+            % Create nshotsSlider
+            app.nshotsSlider = uislider(app.MRESimulationPanel);
+            app.nshotsSlider.Limits = [0 100];
+            app.nshotsSlider.ValueChangedFcn = createCallbackFcn(app, @nshotsSliderValueChanged, true);
+            app.nshotsSlider.FontName = 'Arial';
+            app.nshotsSlider.FontWeight = 'bold';
+            app.nshotsSlider.Position = [464 440 201 3];
+            app.nshotsSlider.Enable = 'off';
+
+            % Create RunSimulationButton
+            app.RunSimulationButton = uibutton(app.MRESimulationPanel, 'push');
+            app.RunSimulationButton.BackgroundColor = [0.8627 0.949 0.902];
+            app.RunSimulationButton.FontName = 'Arial';
+            app.RunSimulationButton.FontSize = 16;
+            app.RunSimulationButton.FontWeight = 'bold';
+            app.RunSimulationButton.Position = [294 27 132 44];
+            app.RunSimulationButton.Text = 'Run Simulation';
+
+            % Create VIBESLab
+            app.VIBESLab = uilabel(app.MRESimulationPanel);
+            app.VIBESLab.BackgroundColor = [1 1 1];
+            app.VIBESLab.WordWrap = 'on';
+            app.VIBESLab.FontName = 'Arial';
+            app.VIBESLab.FontSize = 20;
+            app.VIBESLab.FontWeight = 'bold';
+            app.VIBESLab.Position = [27 18 93 53];
+            app.VIBESLab.Text = 'VIBES Lab ';
+
+            % Show the figure after all components are created
+            app.SelectiveDropDown.Visible = 'on';
+           
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = SimulationGUI
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.SelectiveDropDown)
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.SelectiveDropDown)
+        end
+    end
+end
