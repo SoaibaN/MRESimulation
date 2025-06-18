@@ -1,0 +1,108 @@
+% function simulation_MRE_distortion(rootPath)
+
+% This is the wrapper code for the entire simulation. Here, the user is
+% able to input their desired values for the various parameters. There are
+% three main parts to this simulation: 
+% 
+% 1. No Correction 
+% 2. Fugue Correction 
+% 3. Topup Correction 
+% 
+% When run, the simulation performs its function as coded. 
+% 
+% Created By: Dr. Grace McIlvain, School, 20XX 
+% Edited By: Soaiba Nuzhat, Columbia University, July 2024 
+
+load('simg_all_slice.mat');
+
+%% Variable Setting
+
+app = DropDownTest;
+
+N = app.NSlider.Value;
+FMonoff = app.FMonoffDropDown.Value;
+FMtype = app.FMtypeDropDown.Value;
+FMdir = app.FMdirDropDown.Value;
+FMmaxHz = app.FMmaxSlider.Value;
+ReadoutMs = app.ReadoutMsSlider.Value;
+Trajectory = app.TrajectoryDropDown.Value; 
+filldir = app.filldirDropDown.Value;
+nshots = app.nshotsSlider.Value;
+
+
+%Point Spacing Conversion 
+PointSpacing=ReadoutMs/(N*N*1000); 
+
+FolderName =(sprintf('Sim_Res%d_FM%d_type%d_dir%d_%d_PtSpace%d_Traj%d_%d',N,FMonoff,FMtype,FMdir,FMmaxHz,PointSpacing,Trajectory,filldir));
+        mkdir(FolderName)
+
+if filldir == 1 | filldir == 3
+    dirname = 'AP';
+    [img,FM]=distortion_creation(simg,N,FMonoff,FMtype,FMdir,FMmaxHz,PointSpacing,Trajectory,dirname, FolderName);
+    fugue_correction(img,FM, FolderName, dirname, PointSpacing)
+end
+if filldir == 2 || filldir == 3
+    dirname = 'PA';
+    [img,FM]=distortion_creation(simg,N,FMonoff,FMtype,FMdir,FMmaxHz,PointSpacing,Trajectory,dirname, FolderName);
+    fugue_correction(img,FM, FolderName, dirname, PointSpacing)
+end
+
+if filldir == 3
+    topup_correction(FolderName, rootPath)
+end
+
+
+        function [img,FM]=distortion_creation(simg,N,FMonoff,FMtype,FMdir,FMmaxHz,PointSpacing,Trajectory,dirname, FolderName)
+        mkdir(sprintf('%s/No_correction',FolderName))
+
+        %% No Correction
+        [rawData,imgPhantom,img,FM] = recon_MRE_images(simg,N,FMonoff,FMtype,FMdir,FMmaxHz, PointSpacing, nshots, Trajectory,dirname);
+        save(sprintf('%s/No_correction/rawData%s.mat',FolderName,dirname),'rawData','imgPhantom')
+        save(sprintf('%s/No_correction/img%s.mat',FolderName,dirname),'img')
+        save(sprintf('%s/No_correction/Field_Map_img',FolderName),'FM')
+
+        [Xmotion,Ymotion,Zmotion,mask,t2stack,mreParams]=convert_sim_for_NLI(img);
+        save(sprintf('%s/NLI_No_correction%s.mat',FolderName,dirname),'Xmotion','Ymotion','Zmotion','mask','t2stack','mreParams')
+    end 
+    
+    function fugue_correction(img,FM, FolderName, dirname, PointSpacing)
+        %% Fugue Correction
+        mkdir(sprintf('%s/Fugue_correction',FolderName))
+        mkdir(sprintf('%s/Fugue_correction/%s',FolderName,dirname))
+
+        [FM_nii,real_nii,imag_nii,img_nii]= prep_for_fugue(img,FM);
+        save_nii(FM_nii,sprintf('%s/Fugue_correction/%s/FM_rads.nii',FolderName,dirname));
+        save_nii(real_nii,sprintf('%s/Fugue_correction/%s/real_nii.nii',FolderName,dirname));
+        save_nii(imag_nii,sprintf('%s/Fugue_correction/%s/imag_nii.nii',FolderName,dirname));
+        save_nii(img_nii,sprintf('%s/Fugue_correction/%s/img_nii.nii',FolderName,dirname));
+
+        pathToFugue = sprintf('%s/Fugue_correction/%s',FolderName,dirname);
+        dwellTime = PointSpacing*size(img,2);
+        [img_fugue]= run_fugue_correction(dwellTime,pathToFugue,img);
+        save(sprintf('%s/Fugue_correction/%s/img_fugue.mat', FolderName, dirname),'img_fugue')
+
+        [Xmotion,Ymotion,Zmotion,mask,t2stack,mreParams]=convert_sim_for_NLI(img_fugue);
+        save(sprintf('%s/NLI_Fugue_correction%s.mat',FolderName,dirname),'Xmotion','Ymotion','Zmotion','mask','t2stack','mreParams')
+    end 
+    
+ %% Topup Correction
+    
+    function topup_correction(FolderName, rootPath)
+        load(sprintf('%s/No_correction/imgAP.mat', FolderName));
+        imgAP = img;
+        load(sprintf('%s/No_correction/imgPA.mat', FolderName));
+        imgPA = img;
+        b02b0 = 'b02b0.cnf';
+        acq_params = 'acq_params_topup.txt';
+        mkdir(sprintf('%s/Topup_correction',FolderName));
+        [img_topup]=run_topup_correction(imgAP,imgPA,rootPath,FolderName);
+        
+        [Xmotion,Ymotion,Zmotion,mask,t2stack,mreParams]=convert_sim_for_NLI(img_topup);
+        save(sprintf('%s/NLI_topup_correction.mat',FolderName),'Xmotion','Ymotion','Zmotion','mask','t2stack','mreParams')
+
+    end
+
+%% Load Images 
+    load_images(dirname, FolderName, filldir)
+    
+%end
